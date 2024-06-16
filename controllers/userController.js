@@ -15,13 +15,13 @@ exports.createUser = async (req, res) => {
     }
 
     try {
-        const existingUser = await User.findOne({ firebaseId });
+        const existingUser = await User.findOne({ _id: firebaseId });
         if (existingUser) {
             return res.status(400).json({ error: 'User already exists' });
         }
 
         // Встановлюємо `_id` на значення `firebaseId`
-        const newUser = new User({ _id: firebaseId, firebaseId });
+        const newUser = new User({ _id: firebaseId});
         await newUser.save();
         res.status(201).json(newUser);
     } catch (error) {
