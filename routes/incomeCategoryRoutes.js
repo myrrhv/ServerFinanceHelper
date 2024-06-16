@@ -4,8 +4,7 @@ const incomeCategoryController = require('../controllers/incomeCategoryControlle
 const auth = require("../middleware/auth");
 
 // Маршрут для створення нової категорії доходу
-router.post('/createIncomeCategory', incomeCategoryController.createIncomeCategory);
-//router.post('/createIncomeCategory', auth.protect, incomeCategoryController.createIncomeCategory);
+router.post('/createIncomeCategory', auth.protect, incomeCategoryController.createIncomeCategory);
 
 // Маршрут для редагування існуючої категорії доходу
 router.put('/update/:id',auth.protect, incomeCategoryController.editIncomeCategory);
