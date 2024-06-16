@@ -175,8 +175,10 @@ exports.getAllCategories = async (req, res) => {
 
         // Перевірка наявності результатів
         if (!categoryLimits || categoryLimits.length === 0) {
-            return res.status(404).json({ message: "Ліміти категорій витрат не знайдено" });
+            // Якщо немає лімітів, повертаємо порожній масив
+            return res.status(200).json([]);
         }
+
 
         // Підготувати відповідь з поточними витратами та лімітами категорій
         const response = categoryLimits.map(categoryLimit => ({
