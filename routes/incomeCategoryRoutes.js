@@ -9,4 +9,7 @@ router.post('/createIncomeCategory', auth.protect, incomeCategoryController.crea
 // Маршрут для редагування існуючої категорії доходу
 router.put('/update/:id',auth.protect, incomeCategoryController.editIncomeCategory);
 
+//Маршрут для отримання всіх категорій доходів
+router.get('/allCategories/:month/:year',auth.protect, incomeCategoryController.getCategories);
+
 module.exports = router;

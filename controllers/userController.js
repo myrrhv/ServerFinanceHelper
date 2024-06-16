@@ -4,8 +4,6 @@ const Income = require('../models/income/incomeModel');
 const Expense = require('../models/expense/expenseModel');
 const IncomeCategory = require('../models/income/incomeCategoryModel');
 const ExpenseCategory = require('../models/expense/expenseCategoryModel');
-const ExpenseCategoryLimit = require('../models/expense/expenseCategoryLimitModel');
-const Account = require('../models/account/accountModel');
 
 
 exports.createUser = async (req, res) => {
@@ -153,48 +151,6 @@ exports.getAllMonthSummaries = async (req, res) => {
     }
 };
 
-
-exports.getAllCategories = async (req, res) => {
-    const { month } = req.body;
-    const userId = req.userId;
-
-
-    try {
-        // Отримати всі категорії витрат для поточного користувача
-        const expenseCategories = await ExpenseCategory.find({ userId });
-
-        // Отримати ліміти категорій витрат для вказаного місяця та userId
-        const categoryLimits = await ExpenseCategoryLimit.find({ month, categoryId: { $in: expenseCategories.map(cat => cat._id) } })
-            .populate({
-                path: 'categoryId',
-                select: 'name'
-            })
-            .exec();
-
-        console.log("Отримано ліміти категорій витрат:", categoryLimits);
-
-        // Перевірка наявності результатів
-        if (!categoryLimits || categoryLimits.length === 0) {
-            // Якщо немає лімітів, повертаємо порожній масив
-            return res.status(200).json([]);
-        }
-
-
-        // Підготувати відповідь з поточними витратами та лімітами категорій
-        const response = categoryLimits.map(categoryLimit => ({
-            categoryId: categoryLimit.categoryId._id,
-            categoryName: categoryLimit.categoryId.name,
-            currentExpense: categoryLimit.currentExpense,
-            limit: categoryLimit.limit,
-            percentageSpent: (categoryLimit.currentExpense / categoryLimit.limit) * 100
-        }));
-
-        res.status(200).json(response);
-    } catch (error) {
-        console.error("Помилка при отриманні категорій витрат:", error);
-        res.status(500).json({ message: "Помилка сервера" });
-    }
-};
 
 
 exports.deleteCategory = async (req, res) => {

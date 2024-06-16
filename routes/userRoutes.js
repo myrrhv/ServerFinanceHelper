@@ -12,9 +12,6 @@ router.get('/getAllTransactions',auth.protect,  userController.getAllTransaction
 //всі доходи і витрати за вказаний рік
 router.get('/getAllMonthSummaries',auth.protect,  userController.getAllMonthSummaries);
 
-//всі категорії користувача із витратами, доходами
-router.get('/getAllCategories',auth.protect,  userController.getAllCategories );
-
 // видалити категорію
 router.delete('/deleteCategory/:categoryId',auth.protect,  userController.deleteCategory);
 

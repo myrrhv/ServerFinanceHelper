@@ -1,4 +1,5 @@
 const IncomeCategory = require('../models/income/incomeCategoryModel');
+const Income = require('../models/income/incomeModel');
 
 exports.createIncomeCategory = async (req, res) => {
     try {
@@ -59,6 +60,63 @@ exports.editIncomeCategory = async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: 'Error editing income category'
+        });
+    }
+};
+
+exports.getCategories = async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const month = req.params.month;
+        const year = req.params.year;
+        const numericMonth = parseInt(month, 10) - 1;
+
+        const categories = await Income.aggregate([
+            {
+                $match: {
+                    userId: userId,
+                    date: {
+                        $gte: new Date(year, numericMonth, 1),
+                        $lt: new Date(year, numericMonth + 1, 1)
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'incomecategories',
+                    localField: 'categoryId',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
+            {
+                $unwind: '$category'
+            },
+            {
+                $group: {
+                    _id: '$categoryId',
+                    name: { $first: '$category.name' }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    categoryId: '$_id',
+                    name: 1
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            status: 'success',
+            data: categories
+        });
+    } catch (error) {
+        console.error('Error fetching income categories for current month:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Error fetching income categories for current month'
         });
     }
 };
