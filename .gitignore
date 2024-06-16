@@ -1,0 +1,17 @@
+# Node.js
+node_modules/
+
+
+# Лог-файли
+logs
+*.log
+npm-debug.log*
+
+# Середовище
+.env
+
+# IDE
+.idea/
+
+
+finance-helper.json
