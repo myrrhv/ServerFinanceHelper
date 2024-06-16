@@ -6,6 +6,16 @@ exports.createIncomeCategory = async (req, res) => {
 
         const userId = req.userId;
 
+        const lowerCaseName = name.toLowerCase();
+
+        //const existingCategory = await IncomeCategory.findOne({ lowerCaseName, userId });
+        const existingCategory = await IncomeCategory.findOne({ name: lowerCaseName, userId }).collation({ locale: 'en', strength: 2 });
+        if (existingCategory) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Категорія уже існує'
+            });
+        }
 
         // Створюємо нову категорію доходу
         const newIncomeCategory = new IncomeCategory({ name, userId });
