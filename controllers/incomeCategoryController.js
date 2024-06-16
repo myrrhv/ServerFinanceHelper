@@ -108,9 +108,11 @@ exports.getCategories = async (req, res) => {
             }
         ]);
 
+        const data = categories || [];
+
         res.status(200).json({
             status: 'success',
-            data: categories
+            data: data
         });
     } catch (error) {
         console.error('Error fetching income categories for current month:', error);
