@@ -15,9 +15,7 @@ exports.createExpense = async (req, res) => {
 
         // Перевірка наявності ліміту категорії витрат
         const categoryLimit = await ExpenseCategoryLimit.findOne({ categoryId });
-        if (!categoryLimit) {
-            return res.status(404).json({ message: "Ліміт категорії витрат не знайдено" });
-        }
+
 
         // Перевірка балансу рахунку
         if (selectedAccount.balance < amount) {
@@ -41,9 +39,11 @@ exports.createExpense = async (req, res) => {
         selectedAccount.balance -= amount;
         await selectedAccount.save();
 
-        // Оновлення поточної суми витрат у ліміті категорії
-        categoryLimit.currentExpense += amount;
-        await categoryLimit.save();
+       // Якщо є ліміт для категорії, оновити поточну суму витрат
+        if (categoryLimit) {
+            categoryLimit.currentExpense += amount;
+            await categoryLimit.save();
+        }
 
         res.status(201).json(newExpense);
     } catch (error) {
