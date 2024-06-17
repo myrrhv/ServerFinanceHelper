@@ -21,7 +21,7 @@ exports.createIncomeCategory = async (req, res) => {
         if (existingCategory) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Категорія уже існує'
+                message: 'Category already exists'
             });
         }
 
