@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Account = require('../models/account/accountModel');
 
 const connectDB = async () => {
     try {
@@ -10,6 +11,12 @@ const connectDB = async () => {
     } catch (err) {
         console.log(err);
         process.exit(1);
+    }
+    try {
+        await Account.syncIndexes();
+        console.log('Indexes synchronized successfully');
+    } catch (error) {
+        console.error('Error synchronizing indexes:', error);
     }
 };
 connectDB();
