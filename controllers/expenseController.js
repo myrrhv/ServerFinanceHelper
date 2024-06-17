@@ -3,8 +3,7 @@ const Account = require('../models/account/accountModel')
 const ExpenseCategoryLimit = require('../models/expense/expenseCategoryLimitModel');
 
 exports.createExpense = async (req, res) => {
-    // const userId = req.userId;
-    const userId = "66cj2L8C4XT8CNB9ikKIcOcPBOl2";
+    const userId = req.userId;
     const { categoryId, account, amount, date, note } = req.body;
 
     try {
