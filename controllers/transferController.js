@@ -9,17 +9,17 @@ exports.createTransfer = async (req, res) => {
         // Перевірка наявності рахунків
         const fromAccount = await Account.findById(fromAccountId);
         if (!fromAccount) {
-            return res.status(404).json({ message: "Вихідний рахунок не знайдено" });
+            return res.status(404).json({ message: "From account not found" });
         }
 
         const toAccount = await Account.findById(toAccountId);
         if (!toAccount) {
-            return res.status(404).json({ message: "Вхідний рахунок не знайдено" });
+            return res.status(404).json({ message: "To account not found" });
         }
 
         // Перевірка балансу вихідного рахунку
         if (fromAccount.balance < amount) {
-            return res.status(400).json({ message: "Недостатньо коштів на вихідному рахунку" });
+            return res.status(400).json({ message: "Insufficient funds in the from account" });
         }
 
         // Створення нового переказу
@@ -43,7 +43,7 @@ exports.createTransfer = async (req, res) => {
         res.status(201).json(newTransfer);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Помилка сервера" });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -149,9 +149,9 @@ exports.deleteTransfer = async (req, res) => {
         // Видалення переказу
         await Transfer.findByIdAndDelete(transferId);
 
-        res.status(200).json({ message: "Переказ успішно видалено" });
+        res.status(200).json({ message: "The transfer was successfully deleted" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Помилка сервера" });
+        res.status(500).json({ message: "Server error" });
     }
 };
