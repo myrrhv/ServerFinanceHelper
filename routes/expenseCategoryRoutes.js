@@ -11,4 +11,6 @@ router.post('/createExpenseCategory',auth.protect,  expenseCategoryController.ad
 router.put('/updateExpenseCategory/:categoryId',auth.protect, expenseCategoryController.editExpenseCategory);
 
 router.get('/allCategories/:month/:year',auth.protect, expenseCategoryController.getAllCategories );
+
+
 module.exports = router;

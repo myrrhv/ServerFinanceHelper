@@ -102,6 +102,12 @@ exports.getAllCategories = async (req, res) => {
         // Отримати всі категорії витрат для поточного користувача
         const expenseCategories = await ExpenseCategory.find({ userId });
 
+        // Перевірка наявності результатів
+        if (!expenseCategories || expenseCategories.length === 0) {
+            // Якщо немає катгорій, повертаємо порожній масив
+            return res.status(200).json([]);
+        }
+
         // Отримати ліміти категорій витрат для вказаного місяця та userId
         const categoryLimits = await ExpenseCategoryLimit.find({ month, year, categoryId: { $in: expenseCategories.map(cat => cat._id) } })
             .populate({
@@ -120,14 +126,26 @@ exports.getAllCategories = async (req, res) => {
         }
 
 
-        // Підготувати відповідь з поточними витратами та лімітами категорій
-        const response = categoryLimits.map(categoryLimit => ({
-            categoryId: categoryLimit.categoryId._id,
-            categoryName: categoryLimit.categoryId.name,
-            currentExpense: categoryLimit.currentExpense,
-            limit: categoryLimit.limit,
-            percentageSpent: (categoryLimit.currentExpense / categoryLimit.limit) * 100
-        }));
+        const response = expenseCategories.map(category => {
+            // Знайти ліміт для поточної категорії, якщо він є
+            const limitInfo = categoryLimits.find(limit => limit.categoryId.equals(category._id));
+
+            if (limitInfo) {
+                return {
+                    categoryId: limitInfo.categoryId._id,
+                    categoryName: limitInfo.categoryId.name,
+                    currentExpense: limitInfo.currentExpense,
+                    limit: limitInfo.limit,
+                    percentageSpent: (limitInfo.currentExpense / limitInfo.limit) * 100
+                };
+            } else {
+                // Якщо немає ліміту для категорії, повертаємо лише ідентифікатор та назву категорії
+                return {
+                    categoryId: category._id,
+                    categoryName: category.name
+                };
+            }
+        });
 
         res.status(200).json(response);
     } catch (error) {
