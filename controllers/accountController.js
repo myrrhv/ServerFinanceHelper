@@ -109,7 +109,7 @@ exports.getUserBalances = async (req, res) => {
 
         res.status(200).json({
             status: 'success',
-            data: accounts
+            data: accounts || [] 
         });
     } catch (error) {
         console.error('Error fetching user balances:', error);
