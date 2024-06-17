@@ -9,7 +9,7 @@ const expenseSchema = new Schema({
     },
     categoryId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'ExpenseCategoryLimit',
+        ref: 'ExpenseCategory',
         required: true
     },
     account: {
