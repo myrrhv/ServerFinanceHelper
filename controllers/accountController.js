@@ -13,6 +13,13 @@ exports.createAccount = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'User not found' });
         }
 
+        // Перевірка кількості акаунтів користувача
+        const accountCount = await Account.countDocuments({ userId });
+
+        if (accountCount >= 15) {
+            return res.status(400).json({ status: 'error', message: 'User has reached the limit of 15 accounts' });
+        }
+
         const newAccount = await Account.create({
             name,
             balance,
