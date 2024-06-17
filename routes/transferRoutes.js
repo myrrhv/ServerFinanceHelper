@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 
 
 // Маршрут для створення переказу
-router.post('/createTransfer', transferController.createTransfer);
+router.post('/createTransfer', auth.protect,  transferController.createTransfer);
 
 // Маршрут для оновлення переказу
 router.put('/updateTransfer/:transferId',auth.protect, transferController.updateTransfer);
