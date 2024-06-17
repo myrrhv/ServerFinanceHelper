@@ -55,7 +55,7 @@ exports.updateTransfer = async (req, res) => {
         // Знайти переказ за його ідентифікатором
         const transfer = await Transfer.findById(transferId);
         if (!transfer) {
-            return res.status(404).json({ message: "Переказ не знайдено" });
+            return res.status(404).json({ message: "Transfer not found" });
         }
 
         // Знайти рахунки, які беруть участь у переказі
@@ -79,11 +79,11 @@ exports.updateTransfer = async (req, res) => {
             // Знайти новий рахунок
             fromAccount = await Account.findById(fromAccountId);
             if (!fromAccount) {
-                return res.status(404).json({ message: "Вихідний рахунок не знайдено" });
+                return res.status(404).json({ message: "From account not found" });
             }
             // Перевірити баланс вихідного рахунку
             if (fromAccount.balance < transfer.amount) {
-                return res.status(400).json({ message: "Недостатньо коштів на вихідному рахунку" });
+                return res.status(400).json({ message: "Insufficient funds in the from account" });
             }
             fromAccount.balance -= transfer.amount;
             transfer.fromAccountId = fromAccountId;
@@ -95,7 +95,7 @@ exports.updateTransfer = async (req, res) => {
             // Знайти новий рахунок
             toAccount = await Account.findById(toAccountId);
             if (!toAccount) {
-                return res.status(404).json({ message: "Вхідний рахунок не знайдено" });
+                return res.status(404).json({ message: "To account not found" });
             }
             toAccount.balance += transfer.amount;
             transfer.toAccountId = toAccountId;
@@ -112,7 +112,7 @@ exports.updateTransfer = async (req, res) => {
         res.status(200).json(transfer);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Помилка сервера" });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -124,18 +124,18 @@ exports.deleteTransfer = async (req, res) => {
         // Знайти переказ за ID
         const transfer = await Transfer.findById(transferId);
         if (!transfer) {
-            return res.status(404).json({ message: "Переказ не знайдено" });
+            return res.status(404).json({ message: "Transfer not found" });
         }
 
         // Знайти рахунки за ID
         const fromAccount = await Account.findById(transfer.fromAccountId);
         if (!fromAccount) {
-            return res.status(404).json({ message: "Вихідний рахунок не знайдено" });
+            return res.status(404).json({ message: "From account not found" });
         }
 
         const toAccount = await Account.findById(transfer.toAccountId);
         if (!toAccount) {
-            return res.status(404).json({ message: "Вхідний рахунок не знайдено" });
+            return res.status(404).json({ message: "To account not found" });
         }
 
         // Оновлення балансів рахунків
