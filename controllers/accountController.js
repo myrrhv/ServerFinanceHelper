@@ -5,7 +5,10 @@ exports.createAccount = async (req, res) => {
     try {
         const { name, balance } = req.body;
         const userId = req.userId;
-
+        // Перевірка на наявність обов'язкових полів
+        if (!name || balance === undefined) {
+            return res.status(400).json({ status: 'error', message: 'Name and balance are required' });
+        }
 
         const user = await User.findById(userId);
 
