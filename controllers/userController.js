@@ -32,12 +32,13 @@ exports.createUser = async (req, res) => {
 
 exports.getAllTransactions = async (req, res) => {
     try {
-        const month = req.body.month; // Місяць, який передається в параметрах
-        const year = new Date().getFullYear(); // Поточний рік
+        const month = req.params.month;
+        const year = req.params.year;
+
         const userId = req.userId;
 
-
         // Отримати всі доходи за вказаний місяць і рік для конкретного користувача
+
         const incomes = await Income.find({
             userId: userId,
             date: {
@@ -55,8 +56,12 @@ exports.getAllTransactions = async (req, res) => {
             }
         }).populate('categoryId', 'name').populate('account', 'name');
         const transactions = [];
+
+        let amount_income = 0;
         incomes.forEach(income => {
+            amount_income += income.amount;
             transactions.push({
+
                 date: income.date.getDate(), // Число місяця
                 dayOfWeek: income.date.getDay(), // День тижня
                 category: income.categoryId ? income.categoryId.name : 'Невідома категорія', // Назва категорії
@@ -66,7 +71,9 @@ exports.getAllTransactions = async (req, res) => {
             });
         });
 
+        let amount_expense = 0;
         expenses.forEach(expense => {
+            amount_expense += expense.amount;
             transactions.push({
                 date: expense.date.getDate(), // Число місяця
                 dayOfWeek: expense.date.getDay(), // День тижня
@@ -76,7 +83,16 @@ exports.getAllTransactions = async (req, res) => {
                 type: 'expense' // Тип транзакції
             });
         });
-        res.status(200).json(transactions);
+        const total = amount_income - amount_expense;
+
+        const response = {
+            transactions: transactions,
+            amount_income: amount_income,
+            amount_expense: amount_expense,
+            total: total
+        };
+
+        res.status(200).json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -87,13 +103,15 @@ exports.getAllTransactions = async (req, res) => {
 
 
 exports.getAllMonthSummaries = async (req, res) => {
-    const { year } = req.body;
+    const year = req.params.year;
     const userId = req.userId;
 
 
     try {
         const summaries = [];
 
+        let yearIncomeTotal = 0;
+        let yearExpenseTotal = 0;
         // Цикл по місяцях (1 - січень, 12 - грудень)
         for (let month = 1; month <= 12; month++) {
             // Отримати всі доходи для поточного місяця і року
@@ -141,8 +159,20 @@ exports.getAllMonthSummaries = async (req, res) => {
                     incomeTotal: incomes.length > 0 ? incomes[0].totalAmount : 0,
                     expenseTotal: expenses.length > 0 ? expenses[0].totalAmount : 0
                 });
+
+                // Додати до загальних сум за рік
+                yearIncomeTotal += incomes.length > 0 ? incomes[0].totalAmount : 0;
+                yearExpenseTotal += expenses.length > 0 ? expenses[0].totalAmount : 0;
             }
         }
+        const yearTotal = yearIncomeTotal -yearExpenseTotal;
+        // Додати зведений звіт за весь рік
+        const yearlySummary = {
+            yearIncomeTotal,
+            yearExpenseTotal,
+            yearTotal
+        };
+        summaries.push(yearlySummary);
 
         res.status(200).json(summaries);
     } catch (error) {

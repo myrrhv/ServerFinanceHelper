@@ -7,10 +7,10 @@ const auth = require("../middleware/auth");
 router.post('/createUser', userController.createUser);
 
 //всі доходи і витрати за вказаний місяць
-router.get('/getAllTransactions',auth.protect,  userController.getAllTransactions);
+router.get('/getAllTransactions/:month/:year', auth.protect,  userController.getAllTransactions);
 
 //всі доходи і витрати за вказаний рік
-router.get('/getAllMonthSummaries',auth.protect,  userController.getAllMonthSummaries);
+router.get('/getAllMonthSummaries/:year',auth.protect,  userController.getAllMonthSummaries);
 
 // видалити категорію
 router.delete('/deleteCategory/:categoryId',auth.protect,  userController.deleteCategory);
