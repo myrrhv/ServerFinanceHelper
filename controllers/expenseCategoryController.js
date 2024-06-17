@@ -1,5 +1,6 @@
 const ExpenseCategory = require('../models/expense/expenseCategoryModel');
 const ExpenseCategoryLimit = require("../models/expense/expenseCategoryLimitModel");
+const Expense = require("../models/expense/expenseModel");
 
 exports.addExpenseCategory = async (req, res) => {
     try {
@@ -94,7 +95,6 @@ exports.editExpenseCategory = async (req, res) => {
 
 exports.getAllCategories = async (req, res) => {
     const userId = req.userId;
-
     const month = req.params.month;
     const year = req.params.year;
 
@@ -125,10 +125,34 @@ exports.getAllCategories = async (req, res) => {
             return res.status(200).json([]);
         }
 
+        // Отримати поточні витрати для кожної категорії для вказаного місяця та року
+        const currentExpenses = await Expense.aggregate([
+            {
+                $match: {
+                    userId,
+                    date: {
+                        $gte: new Date(year, month - 1, 1),
+                        $lt: new Date(year, month, 0)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$categoryId",
+                    totalAmount: { $sum: "$amount" }
+                }
+            }
+        ]);
+
+        const expenseMap = new Map();
+        currentExpenses.forEach(expense => {
+            expenseMap.set(expense._id.toString(), expense.totalAmount);
+        });
 
         const response = expenseCategories.map(category => {
             // Знайти ліміт для поточної категорії, якщо він є
             const limitInfo = categoryLimits.find(limit => limit.categoryId.equals(category._id));
+            const currentExpense = expenseMap.get(category._id.toString()) || 0;
 
             if (limitInfo) {
                 return {
@@ -142,7 +166,8 @@ exports.getAllCategories = async (req, res) => {
                 // Якщо немає ліміту для категорії, повертаємо лише ідентифікатор та назву категорії
                 return {
                     categoryId: category._id,
-                    categoryName: category.name
+                    categoryName: category.name,
+                    currentExpense: currentExpense
                 };
             }
         });
