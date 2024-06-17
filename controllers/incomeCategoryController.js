@@ -7,6 +7,13 @@ exports.createIncomeCategory = async (req, res) => {
 
         const userId = req.userId;
 
+        // Перевірка кількості категорій доходів
+        const incomeCategoryCount = await IncomeCategory.countDocuments({ userId });
+
+        if (incomeCategoryCount >= 15) {
+            return res.status(400).json({ status: 'error', message: 'User has reached the limit of 15 categories' });
+        }
+
         const lowerCaseName = name.toLowerCase();
 
         //const existingCategory = await IncomeCategory.findOne({ lowerCaseName, userId });

@@ -7,6 +7,13 @@ exports.addExpenseCategory = async (req, res) => {
         const { name, limit } = req.body;
         const userId = req.userId;
 
+        // Перевірка кількості категорій доходів
+        const expenseCategoryCount = await ExpenseCategory.countDocuments({ userId });
+
+        if (expenseCategoryCount >= 15) {
+            return res.status(400).json({ status: 'error', message: 'User has reached the limit of 15 categories' });
+        }
+
         const lowerCaseName = name.toLowerCase();
 
         const existingCategory = await ExpenseCategory.findOne({ name: lowerCaseName, userId }).collation({ locale: 'en', strength: 2 });
