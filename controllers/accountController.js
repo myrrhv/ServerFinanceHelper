@@ -9,6 +9,10 @@ exports.createAccount = async (req, res) => {
         if (!name || balance === undefined) {
             return res.status(400).json({ status: 'error', message: 'Name and balance are required' });
         }
+          // Перевірка на негативний баланс
+        if (balance < 0) {
+            return res.status(400).json({ status: 'error', message: 'Balance cannot be negative' });
+        }
 
         const user = await User.findById(userId);
 
