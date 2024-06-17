@@ -53,6 +53,11 @@ exports.editIncomeCategory = async (req, res) => {
         if (!incomeCategory) {
             return res.status(404).json({ status: 'error', message: 'Income category not found' });
         }
+        // Перевіряємо, чи існує категорія з таким же ім'ям для поточного користувача
+        const existingCategory = await IncomeCategory.findOne({ name: name.toLowerCase(), userId }).collation({ locale: 'en', strength: 2 });
+        if (existingCategory && existingCategory._id.toString() !== categoryId) {
+            return res.status(400).json({ status: 'error', message: 'Category already exists' });
+        }
 
         // Оновлюємо дані категорії
         incomeCategory.name = name;
