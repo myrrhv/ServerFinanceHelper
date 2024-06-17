@@ -167,14 +167,15 @@ exports.getAllMonthSummaries = async (req, res) => {
         }
         const yearTotal = yearIncomeTotal -yearExpenseTotal;
         // Додати зведений звіт за весь рік
-        const yearlySummary = {
+        const yearInfo = {
             yearIncomeTotal,
             yearExpenseTotal,
             yearTotal
         };
-        summaries.push(yearlySummary);
-
-        res.status(200).json(summaries);
+         res.status(200).json({
+            yearInfo,
+            arrayOfMonth: summaries
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Помилка сервера" });
