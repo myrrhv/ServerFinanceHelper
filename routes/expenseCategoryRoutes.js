@@ -10,7 +10,10 @@ router.post('/createExpenseCategory',auth.protect, expenseCategoryController.add
 router.put('/updateExpenseCategory/:categoryId',auth.protect, expenseCategoryController.editExpenseCategory);
 
 //отримати всі категорії витрат
-router.get('/allCategories/:month/:year',auth.protect, expenseCategoryController.getAllCategories );
+router.get('/allCategories', auth.protect, expenseCategoryController.getAllCategories );
+
+//отримати всі категорії витрат із всіма іними даними
+router.get('/allCategories/:month/:year', auth.protect, expenseCategoryController.getAllCategoriesByDate );
 
 
 module.exports = router;
