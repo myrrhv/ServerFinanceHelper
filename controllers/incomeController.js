@@ -6,7 +6,7 @@ exports.createIncome = async (req, res) => {
     const userId = req.userId;
 
     try {
-        const { categoryId, amount, date, accountId } = req.body;
+        const { categoryId, amount, date, accountId, note} = req.body;
 
         // Перевірка, чи існує обліковий запис
         const account = await Account.findById(accountId);
@@ -30,9 +30,10 @@ exports.createIncome = async (req, res) => {
         const newIncome = await Income.create({
             userId,
             categoryId,
+            account: accountId,
             amount,
             date,
-            account: accountId
+            note
         });
 
         res.status(201).json({
@@ -52,7 +53,7 @@ exports.createIncome = async (req, res) => {
 exports.updateIncome = async (req, res) => {
     try {
         const { incomeId } = req.params;
-        const { categoryId, amount, date, note } = req.body;
+        const { categoryId, amount, account, date, note } = req.body;
 
         // Перевірка, чи існує дохід
         let income = await Income.findById(incomeId);
@@ -71,20 +72,35 @@ exports.updateIncome = async (req, res) => {
 
         // Отримання попередньої суми доходу і ідентифікатора облікового запису
         const previousAmount = income.amount;
-        const accountId = income.account;
+        const previousAccountId = income.account;
 
-        // Отримання облікового запису для оновлення балансу
-        const account = await Account.findById(accountId);
-        if (!account) {
-            return res.status(404).json({ status: 'error', message: 'Account not found' });
+        // Перевірка, чи змінився рахунок
+        if (account !== previousAccountId.toString()) {
+            // Отримання старого та нового рахунків
+            const oldAccount = await Account.findById(previousAccountId);
+            const newAccount = await Account.findById(account);
+
+            // Перевірка наявності нового рахунку
+            if (!newAccount) {
+                return res.status(404).json({ status: 'error', message: 'New account not found' });
+            }
+
+            // Віднімання попередньої суми зі старого рахунку
+            oldAccount.balance -= previousAmount;
+            await oldAccount.save();
+
+            // Додавання нової суми до нового рахунку
+            newAccount.balance += amount;
+            await newAccount.save();
+
+            // Оновлення accountId в доході
+            income.account = account;
+        } else {
+            // Якщо рахунок не змінився, просто виправити баланс
+            const account = await Account.findById(previousAccountId);
+            account.balance += previousAmount - amount;
+            await account.save();
         }
-
-        // Віднімання попередньої суми та додавання нової до балансу облікового запису
-        account.balance -= previousAmount;
-        account.balance += amount;
-
-        // Збереження оновленого балансу облікового запису
-        await account.save();
 
         // Оновлення інших полів доходу
         income.amount = amount;
@@ -106,7 +122,6 @@ exports.updateIncome = async (req, res) => {
         });
     }
 };
-
 
 exports.deleteIncome = async (req, res) => {
     try {
