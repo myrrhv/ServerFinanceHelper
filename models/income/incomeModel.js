@@ -23,14 +23,6 @@ const incomeSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    isDefault: {
-        type: Boolean,
-        default: false
-    },
-    recurringDate: {
-        type: Number,
-        required: false
-    },
 
     note: {
         type: String,
