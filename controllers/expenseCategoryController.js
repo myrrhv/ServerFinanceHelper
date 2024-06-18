@@ -100,8 +100,27 @@ exports.editExpenseCategory = async (req, res) => {
     }
 };
 
-exports.getAllCategories = async (req, res) => {
+exports.getCategories = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const categories = await ExpenseCategory.find({ userId: userId });
+
+        res.status(200).json({
+            status: 'success',
+            data: categories
+        });
+    } catch (error) {
+        console.error('Error fetching income categories for user:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Error fetching income categories for user'
+        });
+    }
+};
+
+exports.getAllCategoriesByDate = async (req, res) => {
     const userId = req.userId;
+    
     const month = req.params.month;
     const year = req.params.year;
 
@@ -112,7 +131,11 @@ exports.getAllCategories = async (req, res) => {
         // Перевірка наявності результатів
         if (!expenseCategories || expenseCategories.length === 0) {
             // Якщо немає катгорій, повертаємо порожній масив
-            return res.status(200).json([]);
+            return res.status(200).json({
+                categoriesWithLimits: [],
+                categoriesWithoutLimits: [],
+                categoriesWithNoExpenses: []
+            });
         }
 
         // Отримати ліміти категорій витрат для вказаного місяця та userId
@@ -156,33 +179,47 @@ exports.getAllCategories = async (req, res) => {
             expenseMap.set(expense._id.toString(), expense.totalAmount);
         });
 
-        const response = expenseCategories.map(category => {
-            // Знайти ліміт для поточної категорії, якщо він є
+        let categoriesWithLimits = [];
+        let categoriesWithoutLimits = [];
+        let categoriesWithNoExpenses = [];
+
+        expenseCategories.forEach(category => {
+            const categoryIdStr = category._id.toString();
+            const currentExpense = expenseMap.get(categoryIdStr) || 0;
             const limitInfo = categoryLimits.find(limit => limit.categoryId.equals(category._id));
-            const currentExpense = expenseMap.get(category._id.toString()) || 0;
 
             if (limitInfo) {
-                return {
+                categoriesWithLimits.push({
                     categoryId: limitInfo.categoryId._id,
                     categoryName: limitInfo.categoryId.name,
-                    currentExpense: limitInfo.currentExpense,
+                    currentExpense: currentExpense,
                     limit: limitInfo.limit,
-                    percentageSpent: (limitInfo.currentExpense / limitInfo.limit) * 100
-                };
-            } else {
-                // Якщо немає ліміту для категорії, повертаємо лише ідентифікатор та назву категорії
-                return {
+                    percentageSpent: (currentExpense / limitInfo.limit) * 100
+                });
+            } else if (currentExpense > 0) {
+                categoriesWithoutLimits.push({
                     categoryId: category._id,
                     categoryName: category.name,
                     currentExpense: currentExpense
-                };
+                });
+            } else {
+                categoriesWithNoExpenses.push({
+                    categoryId: category._id,
+                    categoryName: category.name
+                });
             }
         });
 
+        const response = {
+            categoriesWithLimits: categoriesWithLimits,
+            categoriesWithoutLimits: categoriesWithoutLimits,
+            categoriesWithNoExpenses: categoriesWithNoExpenses
+        };
+
+        // Send the response
         res.status(200).json(response);
     } catch (error) {
         console.error("Помилка при отриманні категорій витрат:", error);
         res.status(500).json({ message: "Помилка сервера" });
     }
 };
-
