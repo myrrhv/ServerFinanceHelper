@@ -164,19 +164,17 @@ exports.deleteExpense = async (req, res) => {
             return res.status(404).json({ message: "Account not found" });
         }
 
-        // Знайти відповідний ліміт категорії витрат
-        const categoryLimit = await ExpenseCategoryLimit.findOne({ categoryId: expense.categoryId });
-        if (!categoryLimit) {
-            return res.status(404).json({ message: "Ліміт категорії витрат не знайдено" });
-        }
-
         // Оновити баланс рахунку
         selectedAccount.balance += expense.amount;
         await selectedAccount.save();
 
-        // Оновити поточну суму витрат у ліміті категорії
-        categoryLimit.currentExpense -= expense.amount;
-        await categoryLimit.save();
+        const categoryLimit = await ExpenseCategoryLimit.findOne({ categoryId: expense.categoryId });
+
+        // Якщо ліміт категорії існує, оновити поточну суму витрат у ліміті категорії
+        if (categoryLimit) {
+            categoryLimit.currentExpense -= expense.amount;
+            await categoryLimit.save();
+        }
 
         // Видалити витрату
         await Expense.deleteOne({ _id: expenseId });
