@@ -6,7 +6,7 @@ exports.createIncome = async (req, res) => {
     const userId = req.userId;
 
     try {
-        const { categoryId, amount, date, isDefault, recurringDate, accountId } = req.body;
+        const { categoryId, amount, date, accountId } = req.body;
 
         // Перевірка, чи існує обліковий запис
         const account = await Account.findById(accountId);
@@ -32,8 +32,6 @@ exports.createIncome = async (req, res) => {
             categoryId,
             amount,
             date,
-            isDefault,
-            recurringDate,
             account: accountId
         });
 
@@ -54,7 +52,7 @@ exports.createIncome = async (req, res) => {
 exports.updateIncome = async (req, res) => {
     try {
         const { incomeId } = req.params;
-        const { categoryId, amount, date, isDefault, recurringDate, note } = req.body;
+        const { categoryId, amount, date, note } = req.body;
 
         // Перевірка, чи існує дохід
         let income = await Income.findById(incomeId);
@@ -91,8 +89,6 @@ exports.updateIncome = async (req, res) => {
         // Оновлення інших полів доходу
         income.amount = amount;
         if (date) income.date = date;
-        if (isDefault !== undefined) income.isDefault = isDefault;
-        if (recurringDate) income.recurringDate = recurringDate;
         if (note) income.note = note;
 
         // Збереження оновленого доходу
