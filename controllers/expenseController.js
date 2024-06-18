@@ -10,7 +10,7 @@ exports.createExpense = async (req, res) => {
         // Перевірка наявності рахунку
         const selectedAccount = await Account.findById(account);
         if (!selectedAccount) {
-            return res.status(404).json({ message: "Рахунок не знайдено" });
+            return res.status(404).json({ message: "Account not found" });
         }
 
         // Перевірка наявності ліміту категорії витрат
@@ -19,7 +19,7 @@ exports.createExpense = async (req, res) => {
 
         // Перевірка балансу рахунку
         if (selectedAccount.balance < amount) {
-            return res.status(400).json({ message: "Недостатньо коштів на рахунку" });
+            return res.status(400).json({ message: "Insufficient funds in the account" });
         }
 
         // Створення нової витрати
@@ -48,7 +48,7 @@ exports.createExpense = async (req, res) => {
         res.status(201).json(newExpense);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Помилка сервера" });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -57,83 +57,95 @@ exports.updateExpense = async (req, res) => {
     const { categoryId, date, note, amount, account } = req.body;
 
     try {
+        // Знайти існуючу витрату
         const expense = await Expense.findById(expenseId);
         if (!expense) {
-            return res.status(404).json({ message: "Витрата не знайдена" });
+            return res.status(404).json({ message: "Expense not found" });
         }
 
-        const oldAccount = await Account.findById(expense.account);
-        if (!oldAccount) {
-            return res.status(404).json({ message: "Старий рахунок не знайдено" });
+        const previousAmount = expense.amount;
+        const amountDifference = amount - previousAmount;
+        let oldAccount, newAccount;
+
+        // Перевірка наявності старого рахунку, якщо змінюється рахунок або сума
+        if (expense.account.toString() !== account || amount !== previousAmount) {
+            oldAccount = await Account.findById(expense.account);
+            if (!oldAccount) {
+                return res.status(404).json({ message: "Old account not found" });
+            }
         }
 
-        let newAccount = oldAccount;
-        if (account && account.toString() !== oldAccount._id.toString()) {
+        // Перевірка наявності нового рахунку, якщо змінюється рахунок
+        if (expense.account.toString() !== account) {
             newAccount = await Account.findById(account);
             if (!newAccount) {
-                return res.status(404).json({ message: "Новий рахунок не знайдено" });
+                return res.status(404).json({ message: "New account not found" });
             }
         }
 
-        let categoryLimit = await ExpenseCategoryLimit.findOne({ categoryId: expense.categoryId });
-        if (!categoryLimit) {
-            return res.status(404).json({ message: "Ліміт категорії витрат не знайдено" });
+        // Перевірка наявності ліміту старої категорії витрат, якщо змінюється категорія або сума
+        let oldCategoryLimit, newCategoryLimit;
+        if (expense.categoryId.toString() !== categoryId || amount !== previousAmount) {
+            oldCategoryLimit = await ExpenseCategoryLimit.findOne({ categoryId: expense.categoryId });
         }
 
-        if (categoryId && categoryId.toString() !== expense.categoryId.toString()) {
-            categoryLimit.currentExpense -= expense.amount;
+        // Перевірка наявності ліміту нової категорії витрат, якщо змінюється категорія
+        if (expense.categoryId.toString() !== categoryId) {
+            newCategoryLimit = await ExpenseCategoryLimit.findOne({ categoryId });
+        }
 
-            let newCategoryLimit = await ExpenseCategoryLimit.findOne({ categoryId });
+        // Оновлення рахунків, якщо змінено рахунок або сума
+        if (expense.account.toString() !== account) {
+            oldAccount.balance += previousAmount;
+            await oldAccount.save();
+
+            if (newAccount.balance < amount) {
+                return res.status(400).json({ message: "Insufficient funds in the new account" });
+            }
+
+            newAccount.balance -= amount;
+            await newAccount.save();
+        } else if (amount !== previousAmount) {
+            if (oldAccount.balance < amountDifference) {
+                return res.status(400).json({ message: "Insufficient funds in the account" });
+            }
+
+            oldAccount.balance -= amountDifference;
+            await oldAccount.save();
+        }
+
+        // Оновлення лімітів категорій, якщо змінено категорію або суму
+        if (expense.categoryId.toString() !== categoryId) {
+            if (oldCategoryLimit) {
+                oldCategoryLimit.currentExpense -= previousAmount;
+                await oldCategoryLimit.save();
+            }
+
             if (newCategoryLimit) {
-                newCategoryLimit.currentExpense += amount !== undefined ? amount : expense.amount;
+                newCategoryLimit.currentExpense += amount;
                 await newCategoryLimit.save();
-                categoryLimit = newCategoryLimit;
             }
+        } else if (amount !== previousAmount && oldCategoryLimit) {
+            oldCategoryLimit.currentExpense += amountDifference;
+            await oldCategoryLimit.save();
         }
 
-        const oldAmount = expense.amount;
-        const newAmount = amount !== undefined ? amount : oldAmount;
-        const changeInAmount = newAmount - oldAmount;
-
-        if (newAccount._id.toString() === oldAccount._id.toString()) {
-            if (changeInAmount !== 0 && newAccount.balance < changeInAmount) {
-                return res.status(400).json({ message: "Недостатньо коштів на рахунку" });
-            }
-        } else {
-            if (newAccount.balance < newAmount) {
-                return res.status(400).json({ message: "Недостатньо коштів на новому рахунку" });
-            }
-        }
-
+        // Оновлення витрати
         expense.categoryId = categoryId || expense.categoryId;
+        expense.account = account || expense.account;
+        expense.amount = amount || expense.amount;
         expense.date = date || expense.date;
         expense.note = note || expense.note;
-        expense.amount = newAmount;
-        expense.account = newAccount._id;
 
         await expense.save();
 
-        if (newAccount._id.toString() === oldAccount._id.toString()) {
-            if (changeInAmount !== 0) {
-                oldAccount.balance -= changeInAmount;
-                await oldAccount.save();
-            }
-        } else {
-            oldAccount.balance += oldAmount;
-            newAccount.balance -= newAmount;
-            await oldAccount.save();
-            await newAccount.save();
-        }
-
-        categoryLimit.currentExpense += changeInAmount;
-        await categoryLimit.save();
-
-        res.json(expense);
+        res.status(200).json(expense);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Помилка сервера" });
+        res.status(500).json({ message: "Server error" });
     }
 };
+
 
 
 exports.deleteExpense = async (req, res) => {
@@ -143,13 +155,13 @@ exports.deleteExpense = async (req, res) => {
         // Знайти витрату
         const expense = await Expense.findById(expenseId);
         if (!expense) {
-            return res.status(404).json({ message: "Витрата не знайдена" });
+            return res.status(404).json({ message: "Expense not found" });
         }
 
         // Знайти відповідний рахунок
         const selectedAccount = await Account.findById(expense.account);
         if (!selectedAccount) {
-            return res.status(404).json({ message: "Рахунок не знайдено" });
+            return res.status(404).json({ message: "Account not found" });
         }
 
         // Знайти відповідний ліміт категорії витрат
@@ -169,9 +181,9 @@ exports.deleteExpense = async (req, res) => {
         // Видалити витрату
         await Expense.deleteOne({ _id: expenseId });
 
-        res.json({ message: "Витрата успішно видалена" });
+        res.json({ message: "Expense deleted successfully" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Помилка сервера" });
+        res.status(500).json({ message: "Server error" });
     }
 };
