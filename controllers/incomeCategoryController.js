@@ -79,6 +79,25 @@ exports.editIncomeCategory = async (req, res) => {
 exports.getCategories = async (req, res) => {
     try {
         const userId = req.userId;
+        const categories = await IncomeCategory.find({ userId: userId });
+
+        res.status(200).json({
+            status: 'success',
+            data: categories
+        });
+    } catch (error) {
+        console.error('Error fetching income categories for user:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Error fetching income categories for user'
+        });
+    }
+};
+
+exports.getCategoriesByDate = async (req, res) => {
+    try {
+        const userId = req.userId;
+        
 
         const month = req.params.month;
         const year = req.params.year;
@@ -134,3 +153,4 @@ exports.getCategories = async (req, res) => {
         });
     }
 };
+
