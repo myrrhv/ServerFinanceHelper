@@ -44,6 +44,7 @@ exports.createIncomeCategory = async (req, res) => {
 
 exports.editIncomeCategory = async (req, res) => {
     try {
+        const userId = req.userId;
         const categoryId = req.params.id;
         console.log(categoryId);
         const { name } = req.body;
