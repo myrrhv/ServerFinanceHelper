@@ -10,6 +10,9 @@ router.post('/createIncomeCategory', auth.protect, incomeCategoryController.crea
 router.put('/update/:id',auth.protect, incomeCategoryController.editIncomeCategory);
 
 //Маршрут для отримання всіх категорій доходів
-router.get('/allCategories/:month/:year',auth.protect, incomeCategoryController.getCategories);
+router.get('/allCategories', auth.protect, incomeCategoryController.getCategories);
+
+//Маршрут для отримання всіх категорій доходів за певний місяць
+router.get('/allCategories/:month/:year', auth.protect, incomeCategoryController.getCategoriesByDate);
 
 module.exports = router;
