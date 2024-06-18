@@ -64,9 +64,11 @@ exports.getAllTransactions = async (req, res) => {
 
                 date: income.date.getDate(), // Число місяця
                 dayOfWeek: income.date.getDay(), // День тижня
+                category: income.categoryId.name,
                 category: income.categoryId ? income.categoryId.name : 'Невідома категорія', // Назва категорії
                 amount: income.amount, // Сума
                 account: income.account ? income.account.name : 'Невідомий рахунок', // Назва рахунку
+                accountId: income.account._id,
                 type: 'income' // Тип транзакції
             });
         });
@@ -77,8 +79,10 @@ exports.getAllTransactions = async (req, res) => {
             transactions.push({
                 date: expense.date.getDate(), // Число місяця
                 dayOfWeek: expense.date.getDay(), // День тижня
+                categoryId:expense.categoryId._id,
                 category: expense.categoryId ? expense.categoryId.name : 'Невідома категорія', // Назва категорії
                 amount: expense.amount, // Сума
+                accountId: expense.account._id,
                 account: expense.account ? expense.account.name : 'Невідомий рахунок', // Назва рахунку
                 type: 'expense' // Тип транзакції
             });
