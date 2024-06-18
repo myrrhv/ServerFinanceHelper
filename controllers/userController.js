@@ -69,6 +69,7 @@ exports.getAllTransactions = async (req, res) => {
                 amount: income.amount, // Сума
                 account: income.account ? income.account.name : 'Невідомий рахунок', // Назва рахунку
                 accountId: income.account._id,
+                note: income.note,
                 type: 'income' // Тип транзакції
             });
         });
@@ -84,7 +85,9 @@ exports.getAllTransactions = async (req, res) => {
                 amount: expense.amount, // Сума
                 accountId: expense.account._id,
                 account: expense.account ? expense.account.name : 'Невідомий рахунок', // Назва рахунку
+                note: expense.note,
                 type: 'expense' // Тип транзакції
+                
             });
         });
         const total = amount_income - amount_expense;
