@@ -69,6 +69,11 @@ exports.updateIncome = async (req, res) => {
             }
             income.categoryId = categoryId;
         }
+        // Перевірка наявності рахунку
+        const selectedAccount = await Account.findById(account);
+        if (!selectedAccount) {
+            return res.status(404).json({status: 'error', message: "Account not found" });
+        }
 
         // Отримання попередньої суми доходу і ідентифікатора облікового запису
         const previousAmount = income.amount;
