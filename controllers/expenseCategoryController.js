@@ -100,7 +100,7 @@ exports.editExpenseCategory = async (req, res) => {
     }
 };
 
-exports.getCategories = async (req, res) => {
+exports.getAllCategories = async (req, res) => {
     try {
         const userId = req.userId;
         const categories = await ExpenseCategory.find({ userId: userId });
