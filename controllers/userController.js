@@ -62,6 +62,7 @@ exports.getAllTransactions = async (req, res) => {
             amount_income += income.amount;
             transactions.push({
                 transactionId: income._id,
+                fullDate: income.date,
                 date: income.date.getDate(), // Число місяця
                 dayOfWeek: income.date.getDay(), // День тижня
                 category: income.categoryId.name,
@@ -79,6 +80,7 @@ exports.getAllTransactions = async (req, res) => {
             amount_expense += expense.amount;
             transactions.push({
                 transactionId: expense._id,
+                fullDate: expense.date,
                 date: expense.date.getDate(), // Число місяця
                 dayOfWeek: expense.date.getDay(), // День тижня
                 categoryId:expense.categoryId._id,
