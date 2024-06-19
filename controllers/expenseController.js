@@ -1,5 +1,6 @@
 const Expense = require('../models/expense/expenseModel');
-const Account = require('../models/account/accountModel')
+const Account = require('../models/account/accountModel');
+const ExpenseCategory = require('../models/expense/expenseCategoryModel');
 const ExpenseCategoryLimit = require('../models/expense/expenseCategoryLimitModel');
 
 exports.createExpense = async (req, res) => {
@@ -7,6 +8,12 @@ exports.createExpense = async (req, res) => {
     const { categoryId, account, amount, date, note } = req.body;
 
     try {
+        // Перевірка наявності рахунку
+        const scategory = await ExpenseCategory.findById(categoryId);
+        if (!scategory) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+        
         // Перевірка наявності рахунку
         const selectedAccount = await Account.findById(account);
         if (!selectedAccount) {
