@@ -149,11 +149,7 @@ exports.getAllCategoriesByDate = async (req, res) => {
         console.log("Отримано ліміти категорій витрат:", categoryLimits);
 
         console.log(categoryLimits);
-        // Перевірка наявності результатів
-        if (!categoryLimits || categoryLimits.length === 0) {
-            // Якщо немає лімітів, повертаємо порожній масив
-            return res.status(200).json([]);
-        }
+        
 
         // Отримати поточні витрати для кожної категорії для вказаного місяця та року
         const currentExpenses = await Expense.aggregate([
