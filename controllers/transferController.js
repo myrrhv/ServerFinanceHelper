@@ -6,6 +6,10 @@ exports.createTransfer = async (req, res) => {
     const { amount, date, fromAccountId, toAccountId } = req.body;
 
     try {
+        // Перевірка, чи заповнене поле amount
+        if (amount === undefined || amount === null || amount <= 0) {
+            return res.status(400).json({ status: 'error', message: 'Amount must be a positive number' });
+        }
         // Перевірка наявності рахунків
         const fromAccount = await Account.findById(fromAccountId);
         if (!fromAccount) {
