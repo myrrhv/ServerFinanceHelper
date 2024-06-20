@@ -7,6 +7,11 @@ exports.createIncomeCategory = async (req, res) => {
 
         const userId = req.userId;
 
+        // Перевірка на пустоту назви категорії
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ status: 'error', message: 'Category name cannot be empty' });
+        }
+
         // Перевірка кількості категорій доходів
         const incomeCategoryCount = await IncomeCategory.countDocuments({ userId });
 
@@ -46,8 +51,12 @@ exports.editIncomeCategory = async (req, res) => {
     try {
         const userId = req.userId;
         const categoryId = req.params.id;
-        console.log(categoryId);
         const { name } = req.body;
+
+        // Перевірка на пустоту назви категорії
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ status: 'error', message: 'Category name cannot be empty' });
+        }
 
         // Знаходимо категорію доходу за її ID
         const incomeCategory = await IncomeCategory.findById(categoryId);
