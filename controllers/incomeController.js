@@ -8,6 +8,11 @@ exports.createIncome = async (req, res) => {
     try {
         const { categoryId, amount, date, accountId, note} = req.body;
 
+        // Перевірка, чи заповнене поле amount
+        if (amount === undefined || amount === null || amount <= 0) {
+            return res.status(400).json({ status: 'error', message: 'Amount must be a positive number' });
+        }
+        
         // Перевірка, чи існує обліковий запис
         const account = await Account.findById(accountId);
         if (!account) {
