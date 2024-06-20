@@ -6,6 +6,11 @@ exports.addExpenseCategory = async (req, res) => {
     try {
         const { name, limit } = req.body;
         const userId = req.userId;
+        
+        // Перевірка на пустоту назви категорії
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ status: 'error', message: 'Category name cannot be empty' });
+        }
 
         // Перевірка кількості категорій доходів
         const expenseCategoryCount = await ExpenseCategory.countDocuments({ userId });
@@ -61,6 +66,11 @@ exports.editExpenseCategory = async (req, res) => {
         const userId = req.userId;
         const { categoryId } = req.params;
         const { name, limit } = req.body;
+
+        // Перевірка на пустоту назви категорії
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ status: 'error', message: 'Category name cannot be empty' });
+        }
 
         const category = await ExpenseCategory.findByIdAndUpdate(categoryId, { name }, { new: true });
 
