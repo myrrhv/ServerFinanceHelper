@@ -8,6 +8,11 @@ exports.createExpense = async (req, res) => {
     const { categoryId, account, amount, date, note } = req.body;
 
     try {
+        // Перевірка, чи заповнене поле amount
+        if (amount === undefined || amount === null || amount <= 0) {
+            return res.status(400).json({ status: 'error', message: 'Amount must be a positive number' });
+        }
+        
         // Перевірка наявності рахунку
         const scategory = await ExpenseCategory.findById(categoryId);
         if (!scategory) {
