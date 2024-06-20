@@ -58,6 +58,7 @@ exports.addExpenseCategory = async (req, res) => {
 
 exports.editExpenseCategory = async (req, res) => {
     try {
+        const userId = req.userId;
         const { categoryId } = req.params;
         const { name, limit } = req.body;
 
@@ -65,6 +66,12 @@ exports.editExpenseCategory = async (req, res) => {
 
         if (!category) {
             return res.status(404).json({ status: 'error', message: 'Expense category not found' });
+        }
+
+        // Перевіряємо, чи існує категорія з таким же ім'ям для поточного користувача
+        const existingCategory = await ExpenseCategory.findOne({ name: name.toLowerCase(), userId }).collation({ locale: 'en', strength: 2 });
+        if (existingCategory && existingCategory._id.toString() !== categoryId) {
+            return res.status(400).json({ status: 'error', message: 'Category already exists' });
         }
 
         // Якщо передано ліміт, перевіряємо чи існує ліміт для цієї категорії
