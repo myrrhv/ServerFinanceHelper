@@ -120,7 +120,11 @@ exports.getAllTransactions = async (req, res) => {
 exports.getAllMonthSummaries = async (req, res) => {
     const year = req.params.year;
     const userId = req.userId;
-
+    
+    // Перевірка на коректність року
+    if (!/^\d{4}$/.test(year)) {
+        return res.status(400).json({ message: 'Invalid year' });
+    }
 
     try {
         const summaries = [];
