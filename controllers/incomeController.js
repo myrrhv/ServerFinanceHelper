@@ -4,12 +4,23 @@ const IncomeCategory = require('../models/income/incomeCategoryModel');
 
 exports.createIncome = async (req, res) => {
     const userId = req.userId;
+    const { categoryId, amount, date, accountId, note} = req.body;
+    
+    // Перевірка наявності всіх обов'язкових полів
+    if (!categoryId) {
+        return res.status(400).json({ message: 'Category ID is required' });
+    }
+    if (!accountId) {
+        return res.status(400).json({ message: 'Account is required' });
+    }
+    if (amount === undefined) {
+        return res.status(400).json({ message: 'Amount is required' });
+    }
 
     try {
-        const { categoryId, amount, date, accountId, note} = req.body;
 
         // Перевірка, чи заповнене поле amount
-        if (amount === undefined || amount === null || amount <= 0) {
+        if (amount === undefined || amount === null || amount <= 0 || isNaN(amount)) {
             return res.status(400).json({ status: 'error', message: 'Amount must be a positive number' });
         }
         
