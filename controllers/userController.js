@@ -37,6 +37,11 @@ exports.getAllTransactions = async (req, res) => {
 
         const userId = req.userId;
 
+        // Перевірка на валідність місяця та року
+        if (isNaN(month) || isNaN(year) || month < 1 || month > 12 || year < 1900 || year > new Date().getFullYear()) {
+            return res.status(400).json({ message: 'Invalid month or year' });
+        }
+
         // Отримати всі доходи за вказаний місяць і рік для конкретного користувача
 
         const incomes = await Income.find({
