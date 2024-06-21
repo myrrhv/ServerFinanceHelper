@@ -15,3 +15,11 @@ npm-debug.log*
 
 
 finance-helper.json
+
+
+test/accountRoutes/.env
+test/expenseCategoryRoutes/.env
+test/incomeCategoryRoutes/.env
+test/incomeRoutes/.env
+test/transferRoutes/.env
+test/userRoutes/.env
