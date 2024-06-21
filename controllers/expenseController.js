@@ -6,10 +6,21 @@ const ExpenseCategoryLimit = require('../models/expense/expenseCategoryLimitMode
 exports.createExpense = async (req, res) => {
     const userId = req.userId;
     const { categoryId, account, amount, date, note } = req.body;
+    
+     // Перевірка наявності всіх обов'язкових полів
+    if (!categoryId) {
+        return res.status(400).json({ message: 'Category ID is required' });
+    }
+    if (!account) {
+        return res.status(400).json({ message: 'Account is required' });
+    }
+    if (amount === undefined) {
+        return res.status(400).json({ message: 'Amount is required' });
+    }
 
     try {
         // Перевірка, чи заповнене поле amount
-        if (amount === undefined || amount === null || amount <= 0) {
+        if (amount === undefined || amount === null || amount <= 0 || isNaN(amount)) {
             return res.status(400).json({ status: 'error', message: 'Amount must be a positive number' });
         }
         
