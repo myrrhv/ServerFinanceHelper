@@ -36,6 +36,7 @@ exports.getAllTransactions = async (req, res) => {
         const year = req.params.year;
 
         const userId = req.userId;
+        console.log(userId);
 
         
 
