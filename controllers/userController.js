@@ -50,6 +50,8 @@ exports.getAllTransactions = async (req, res) => {
             }
         }).populate('categoryId', 'name').populate('account', 'name');
 
+        console.log(incomes);
+
         // Отримати всі витрати за вказаний місяць і рік для конкретного користувача
         const expenses = await Expense.find({
             userId: userId,
@@ -59,6 +61,8 @@ exports.getAllTransactions = async (req, res) => {
             }
         }).populate('categoryId', 'name').populate('account', 'name');
         const transactions = [];
+
+        console.log(expenses);
 
         let amount_income = 0;
         incomes.forEach(income => {
