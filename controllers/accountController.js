@@ -1,5 +1,8 @@
 const Account = require('../models/account/accountModel');
-const User = require('../models/user/userModel')
+const User = require('../models/user/userModel');
+const Income = require('../models/income/incomeModel');
+const Expense = require('../models/expense/expenseModel');
+
 // Створення нового рахунку
 exports.createAccount = async (req, res) => {
     try {
@@ -77,6 +80,18 @@ exports.updateAccount = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
     try {
         const accountId = req.params.id;
+
+        // Перевірити, чи існують доходи або витрати, пов'язані з цим рахунком
+        const relatedIncomes = await Income.findOne({ account: accountId });
+        const relatedExpenses = await Expense.findOne({ account: accountId });
+
+        
+        if (relatedIncomes || relatedExpenses) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Cannot delete account with associated transactions'
+            });
+        }
 
         const deletedAccount = await Account.findByIdAndDelete(accountId);
 
