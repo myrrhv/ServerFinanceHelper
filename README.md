@@ -2,7 +2,7 @@
 
 ## Description
 
-This is backend for a project that you can find https://github.com/koejdga/FinanceHelper.git .
+This is backend for a project that you can find [here](https://github.com/koejdga/FinanceHelper.git) .
 
 ## Run project
 
