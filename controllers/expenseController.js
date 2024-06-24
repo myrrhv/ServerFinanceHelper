@@ -45,6 +45,21 @@ exports.createExpense = async (req, res) => {
             return res.status(400).json({ message: "Insufficient funds in the account" });
         }
 
+        // Перевірка дати
+        const currentDate = new Date();
+        const minDate = new Date('2021-01-01');
+        const expenseDate = new Date(date);
+
+        if (isNaN(expenseDate.getTime())) {
+            return res.status(400).json({ status: 'error', message: 'Invalid date format' });
+        }
+        if (expenseDate > currentDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be in the future' });
+        }
+        if (expenseDate < minDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be before 2021' });
+        }
+
         // Створення нової витрати
         const newExpense = new Expense({
             userId,
@@ -151,6 +166,21 @@ exports.updateExpense = async (req, res) => {
         } else if (amount !== previousAmount && oldCategoryLimit) {
             oldCategoryLimit.currentExpense += amountDifference;
             await oldCategoryLimit.save();
+        }
+
+        // Перевірка дати
+        const currentDate = new Date();
+        const minDate = new Date('2021-01-01');
+        const expenseDate = new Date(date);
+
+        if (isNaN(expenseDate.getTime())) {
+            return res.status(400).json({ status: 'error', message: 'Invalid date format' });
+        }
+        if (expenseDate > currentDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be in the future' });
+        }
+        if (expenseDate < minDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be before 2021' });
         }
 
         // Оновлення витрати
