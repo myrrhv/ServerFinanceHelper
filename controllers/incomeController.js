@@ -30,6 +30,22 @@ exports.createIncome = async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'Account not found' });
         }
 
+        // Перевірка дати
+        const currentDate = new Date();
+        const minDate = new Date('2021-01-01');
+        const incomeDate = new Date(date);
+
+        if (isNaN(incomeDate.getTime())) {
+            return res.status(400).json({ status: 'error', message: 'Invalid date format' });
+        }
+        if (incomeDate > currentDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be in the future' });
+        }
+        if (incomeDate < minDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be before 2021' });
+        }
+
+
         // Перевірка, чи існує категорія
         const category = await IncomeCategory.findById(categoryId);
         if (!category) {
@@ -90,6 +106,22 @@ exports.updateIncome = async (req, res) => {
         if (!selectedAccount) {
             return res.status(404).json({status: 'error', message: "Account not found" });
         }
+
+        // Перевірка дати
+        const currentDate = new Date();
+        const minDate = new Date('2021-01-01');
+        const incomeDate = new Date(date);
+
+        if (isNaN(incomeDate.getTime())) {
+            return res.status(400).json({ status: 'error', message: 'Invalid date format' });
+        }
+        if (incomeDate > currentDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be in the future' });
+        }
+        if (incomeDate < minDate) {
+            return res.status(400).json({ status: 'error', message: 'Date cannot be before 2021' });
+        }
+
 
         // Отримання попередньої суми доходу і ідентифікатора облікового запису
         const previousAmount = income.amount;
